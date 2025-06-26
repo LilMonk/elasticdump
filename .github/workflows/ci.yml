@@ -35,10 +35,11 @@ jobs:
             - 'go.mod'
             - 'go.sum'
             - 'Makefile'
+            - 'Dockerfile'
 
   test:
     needs: changes
-    if: ${{ needs.changes.outputs.go == 'true' }}
+    if: ${{ needs.changes.outputs.go == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     
     steps:
@@ -70,7 +71,7 @@ jobs:
 
   build:
     needs: changes
-    if: ${{ needs.changes.outputs.go == 'true' }}
+    if: ${{ needs.changes.outputs.go == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     
     steps:
@@ -99,7 +100,7 @@ jobs:
 
   lint:
     needs: changes
-    if: ${{ needs.changes.outputs.go == 'true' }}
+    if: ${{ needs.changes.outputs.go == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     
     steps:
