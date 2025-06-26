@@ -8,3 +8,7 @@ elasticdump-*
 dist/
 build/
 bin/
+
+# Coverage files
+coverage.out
+coverage.html
