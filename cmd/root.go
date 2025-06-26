@@ -18,7 +18,12 @@ var rootCmd = &cobra.Command{
 - Handle large datasets efficiently
 - Support multiple output formats (JSON, NDJSON, etc.)
 - Perform multi-threaded operations for faster processing`,
-	Version: "1.0.0",
+	Version: "dev",
+}
+
+// SetVersion sets the version for the root command
+func SetVersion(version string) {
+	rootCmd.Version = version
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

@@ -8,7 +8,7 @@ echo "Transferring index mappings..."
 
 # Configuration
 SOURCE_HOST="http://localhost:9200"
-DEST_HOST="http://localhost:9201"
+DEST_HOST="http://localhost:9200"
 INDEX_NAME="users"
 
 echo "Transferring mappings for index '${INDEX_NAME}'..."

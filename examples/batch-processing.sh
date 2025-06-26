@@ -8,7 +8,7 @@ echo "Processing multiple indices..."
 
 # Configuration
 SOURCE_HOST="http://localhost:9200"
-DEST_HOST="http://localhost:9201"
+DEST_HOST="http://localhost:9200"
 
 # List of indices to migrate
 INDICES=(

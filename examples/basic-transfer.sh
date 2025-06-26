@@ -8,7 +8,7 @@ echo "Transferring data from source index to destination index..."
 
 # Configuration
 SOURCE_HOST="http://localhost:9200"
-DEST_HOST="http://localhost:9201" 
+DEST_HOST="http://localhost:9200" 
 SOURCE_INDEX="products"
 DEST_INDEX="products_backup"
 

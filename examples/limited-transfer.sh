@@ -8,7 +8,7 @@ echo "Transferring limited number of documents..."
 
 # Configuration
 SOURCE_HOST="http://localhost:9200"
-DEST_HOST="http://localhost:9201"
+DEST_HOST="http://localhost:9200"
 SOURCE_INDEX="large_dataset"
 DEST_INDEX="sample_dataset"
 LIMIT=10000  # Transfer only first 10,000 documents

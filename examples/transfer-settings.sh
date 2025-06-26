@@ -8,7 +8,7 @@ echo "Transferring index settings..."
 
 # Configuration
 SOURCE_HOST="http://localhost:9200"
-DEST_HOST="http://localhost:9201"
+DEST_HOST="http://localhost:9200"
 INDEX_NAME="analytics"
 
 echo "Transferring settings for index '${INDEX_NAME}'..."

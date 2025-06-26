@@ -39,7 +39,7 @@ Download the latest binary from the [releases page](https://github.com/lilmonk/e
 Transfer data between two Elasticsearch clusters:
 
 ```bash
-elasticdump transfer --input=http://localhost:9200/source_index --output=http://localhost:9201/dest_index
+elasticdump transfer --input=http://localhost:9200/source_index --output=http://localhost:9200/dest_index
 ```
 
 ### Backup Data
@@ -63,7 +63,7 @@ elasticdump restore --input=backup.ndjson --output=http://localhost:9200/myindex
 Transfer only index mappings:
 
 ```bash
-elasticdump transfer --input=http://localhost:9200/myindex --output=http://localhost:9201/myindex --type=mapping
+elasticdump transfer --input=http://localhost:9200/myindex --output=http://localhost:9200/myindex --type=mapping
 ```
 
 ### Transfer Settings
@@ -71,7 +71,7 @@ elasticdump transfer --input=http://localhost:9200/myindex --output=http://local
 Transfer only index settings:
 
 ```bash
-elasticdump transfer --input=http://localhost:9200/myindex --output=http://localhost:9201/myindex --type=settings
+elasticdump transfer --input=http://localhost:9200/myindex --output=http://localhost:9200/myindex --type=settings
 ```
 
 ## Commands

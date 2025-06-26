@@ -288,7 +288,7 @@ func TestIsFile(t *testing.T) {
 func TestConfig(t *testing.T) {
 	config := Config{
 		Input:       "http://localhost:9200/source",
-		Output:      "http://localhost:9201/dest",
+		Output:      "http://localhost:9200/dest",
 		Type:        "data",
 		Limit:       1000,
 		Concurrency: 4,

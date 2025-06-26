@@ -8,7 +8,7 @@ echo "Performing complete migration (mappings + settings + data)..."
 
 # Configuration
 SOURCE_HOST="http://localhost:9200"
-DEST_HOST="http://localhost:9201"
+DEST_HOST="http://localhost:9200"
 INDEX_NAME="products"
 
 echo "Migrating index '${INDEX_NAME}' from ${SOURCE_HOST} to ${DEST_HOST}..."
