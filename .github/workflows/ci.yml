@@ -91,13 +91,6 @@ jobs:
         ./bin/elasticdump --help
         ./bin/elasticdump version || ./bin/elasticdump --version || true
 
-    - name: Upload binary
-      uses: actions/upload-artifact@v4
-      with:
-        name: elasticdump-${{ github.sha }}
-        path: bin/elasticdump
-        retention-days: 7
-
   lint:
     needs: changes
     if: ${{ needs.changes.outputs.go == 'true' || github.event_name == 'workflow_dispatch' }}

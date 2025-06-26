@@ -15,8 +15,8 @@ func TestRootCommand(t *testing.T) {
 		t.Errorf("Expected root command use to be 'elasticdump', got '%s'", rootCmd.Use)
 	}
 
-	if rootCmd.Version != "1.0.0" {
-		t.Errorf("Expected version to be '1.0.0', got '%s'", rootCmd.Version)
+	if rootCmd.Version != "dev" {
+		t.Errorf("Expected version to be 'dev', got '%s'", rootCmd.Version)
 	}
 
 	// Test that subcommands are registered
