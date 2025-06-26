@@ -1,0 +1,46 @@
+version: 2
+updates:
+  # Go modules
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "lilmonk"
+    assignees:
+      - "lilmonk"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "lilmonk"
+    assignees:
+      - "lilmonk"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+
+  # Docker
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+    open-pull-requests-limit: 2
+    reviewers:
+      - "lilmonk"
+    assignees:
+      - "lilmonk"
+    commit-message:
+      prefix: "docker"
+      include: "scope"

@@ -1,0 +1,19 @@
+# Global owners
+* @lilmonk
+
+# GitHub workflows and configuration
+/.github/ @lilmonk
+
+# Go source code
+*.go @lilmonk
+go.mod @lilmonk
+go.sum @lilmonk
+
+# Examples and documentation
+/examples/ @lilmonk @lilmonk
+*.md @lilmonk
+
+# Build and deployment
+Makefile @lilmonk
+Dockerfile @lilmonk
+docker-compose.yml @lilmonk

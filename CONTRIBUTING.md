@@ -61,3 +61,45 @@ Feature requests are welcome! Please:
 - Check existing issues first
 - Provide clear use case description
 - Include example usage if possible
+
+## CI/CD and Releases
+
+### Automated Testing
+All pull requests automatically trigger:
+- **CI Workflow**: Runs tests, linting, and builds on multiple Go versions
+- **Examples Testing**: Validates example scripts against a real Elasticsearch instance
+- **Code Quality**: Runs golangci-lint for code quality checks
+
+### Release Process
+Releases are automated through GitHub Actions:
+
+1. **Create a release**: Use the release script:
+   ```bash
+   ./scripts/release.sh v1.2.3
+   ```
+
+2. **Automated release workflow** will:
+   - Run comprehensive tests
+   - Build binaries for multiple platforms (Linux, macOS, Windows)
+   - Create GitHub release with changelog
+   - Build and push Docker images
+   - Generate release notes
+
+### Manual Testing
+Before releasing:
+```bash
+# Run all tests
+make test
+
+# Run linting
+make lint
+
+# Build and test binary
+make build
+./bin/elasticdump --version
+```
+
+### Version Management
+- Version is managed through Git tags (e.g., `v1.2.3`)
+- Semantic versioning is used: `MAJOR.MINOR.PATCH`
+- Development builds use version `dev`
