@@ -1,0 +1,10 @@
+elasticdump
+elasticdump-*
+*.exe
+.DS_Store
+*.log
+.vscode/
+.idea/
+dist/
+build/
+bin/
