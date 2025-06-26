@@ -100,3 +100,15 @@ docker-up: ## Start the services defined in docker-compose.yaml
 .PHONY: docker-down
 docker-down: ## Stop the services defined in docker-compose.yaml
 	docker compose -f $(DOCKER_COMPOSE_FILE) down
+
+.PHONY: git-release
+git-release: ## Create a new git release
+	@echo "Creating a new git release..."
+	@read -p "Enter the version (e.g., v1.0.0): " version; \
+	if [ -z "$$version" ]; then \
+		echo "Version cannot be empty"; \
+		exit 1; \
+	fi; \
+	git tag -a "$$version" -m "Release $$version"; \
+	git push origin "$$version"; \
+	echo "Release $$version created and pushed to origin."
