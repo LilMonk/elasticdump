@@ -27,17 +27,27 @@ coverage: ## Run the tests with coverage
 	go test -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out
 
+.PHONY: coverage-detailed
+coverage-detailed: ## Run tests with detailed coverage report
+	go test -coverprofile=coverage.out -covermode=atomic ./...
+	go tool cover -html=coverage.out -o coverage.html
+	go tool cover -func=coverage.out
+
+.PHONY: test-clean
+test-clean: ## Clean test cache and coverage files
+	go clean -testcache
+	rm -f coverage.out coverage.html
+
 .PHONY: format
 format: ## Format the code
 	go fmt ./...
-	swag fmt ./...
 
 .PHONY: lint
 lint: ## Lint the code
 	golangci-lint run
 
 .PHONY: clean
-clean: ## Clean the build artifacts
+clean: test-clean ## Clean the build artifacts
 	rm -f bin/*
 
 .PHONY: install

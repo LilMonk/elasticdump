@@ -18,6 +18,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o elasticdump .
 # Final stage
 FROM alpine:latest
 
+LABEL maintainer="Rahul Sahoo"
+
 RUN apk --no-cache add ca-certificates
 
 WORKDIR /root/

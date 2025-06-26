@@ -2,7 +2,6 @@ package restore
 
 import (
 	"bufio"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/schollz/progressbar/v3"
 )
 
@@ -27,7 +27,7 @@ type Config struct {
 
 // Client wraps Elasticsearch client with additional functionality
 type Client struct {
-	*elasticsearch.Client
+	API ElasticsearchAPI
 	URL string
 }
 
@@ -37,6 +37,38 @@ type Document struct {
 	Type   string                 `json:"_type,omitempty"`
 	ID     string                 `json:"_id"`
 	Source map[string]interface{} `json:"_source"`
+}
+
+// ElasticsearchAPI defines the interface for Elasticsearch operations
+type ElasticsearchAPI interface {
+	Index(index string, body io.Reader, o ...func(*esapi.IndexRequest)) (*esapi.Response, error)
+	IndicesPutMapping(indices []string, body io.Reader, o ...func(*esapi.IndicesPutMappingRequest)) (*esapi.Response, error)
+	IndicesPutSettings(body io.Reader, o ...func(*esapi.IndicesPutSettingsRequest)) (*esapi.Response, error)
+}
+
+// ElasticsearchClientWrapper wraps the actual Elasticsearch client to implement our interface
+type ElasticsearchClientWrapper struct {
+	client *elasticsearch.Client
+}
+
+// NewElasticsearchClientWrapper creates a new wrapper
+func NewElasticsearchClientWrapper(client *elasticsearch.Client) *ElasticsearchClientWrapper {
+	return &ElasticsearchClientWrapper{client: client}
+}
+
+// Index implements ElasticsearchAPI
+func (w *ElasticsearchClientWrapper) Index(index string, body io.Reader, o ...func(*esapi.IndexRequest)) (*esapi.Response, error) {
+	return w.client.Index(index, body, o...)
+}
+
+// IndicesPutMapping implements ElasticsearchAPI
+func (w *ElasticsearchClientWrapper) IndicesPutMapping(indices []string, body io.Reader, o ...func(*esapi.IndicesPutMappingRequest)) (*esapi.Response, error) {
+	return w.client.Indices.PutMapping(indices, body, o...)
+}
+
+// IndicesPutSettings implements ElasticsearchAPI
+func (w *ElasticsearchClientWrapper) IndicesPutSettings(body io.Reader, o ...func(*esapi.IndicesPutSettingsRequest)) (*esapi.Response, error) {
+	return w.client.Indices.PutSettings(body, o...)
 }
 
 // Run executes the restore operation
@@ -81,7 +113,8 @@ func createClient(url, username, password string) (*Client, error) {
 		return nil, err
 	}
 
-	return &Client{Client: client, URL: url}, nil
+	wrapper := NewElasticsearchClientWrapper(client)
+	return &Client{API: wrapper, URL: url}, nil
 }
 
 // restoreData restores documents from file to Elasticsearch
@@ -251,13 +284,14 @@ func indexDocument(client *Client, index string, doc Document) error {
 		return fmt.Errorf("output index cannot be empty")
 	}
 
-	// Use Elasticsearch Go client for indexing
-	res, err := client.Index(
+	// Use Elasticsearch API interface for indexing
+	res, err := client.API.Index(
 		index,
 		strings.NewReader(string(data)),
-		client.Index.WithDocumentID(doc.ID),
-		client.Index.WithContext(context.Background()),
-		client.Index.WithRefresh("false"),
+		func(r *esapi.IndexRequest) {
+			r.DocumentID = doc.ID
+			r.Refresh = "false"
+		},
 	)
 	if err != nil {
 		return err
@@ -278,10 +312,9 @@ func putMapping(client *Client, index string, mapping map[string]interface{}) er
 		return err
 	}
 
-	res, err := client.Indices.PutMapping(
+	res, err := client.API.IndicesPutMapping(
 		[]string{index},
 		strings.NewReader(string(data)),
-		client.Indices.PutMapping.WithContext(context.Background()),
 	)
 	if err != nil {
 		return err
@@ -301,10 +334,11 @@ func putSettings(client *Client, index string, settings map[string]interface{}) 
 		return err
 	}
 
-	res, err := client.Indices.PutSettings(
+	res, err := client.API.IndicesPutSettings(
 		strings.NewReader(string(data)),
-		client.Indices.PutSettings.WithIndex(index),
-		client.Indices.PutSettings.WithContext(context.Background()),
+		func(r *esapi.IndicesPutSettingsRequest) {
+			r.Index = []string{index}
+		},
 	)
 	if err != nil {
 		return err

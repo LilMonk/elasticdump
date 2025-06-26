@@ -1,7 +1,6 @@
 package transfer
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,8 +10,71 @@ import (
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/schollz/progressbar/v3"
 )
+
+// ElasticsearchAPI defines the interface for Elasticsearch operations
+type ElasticsearchAPI interface {
+	Count(o ...func(*esapi.CountRequest)) (*esapi.Response, error)
+	Search(o ...func(*esapi.SearchRequest)) (*esapi.Response, error)
+	Scroll(o ...func(*esapi.ScrollRequest)) (*esapi.Response, error)
+	Index(index string, body io.Reader, o ...func(*esapi.IndexRequest)) (*esapi.Response, error)
+	IndicesGetMapping(o ...func(*esapi.IndicesGetMappingRequest)) (*esapi.Response, error)
+	IndicesPutMapping(indices []string, body io.Reader, o ...func(*esapi.IndicesPutMappingRequest)) (*esapi.Response, error)
+	IndicesGetSettings(o ...func(*esapi.IndicesGetSettingsRequest)) (*esapi.Response, error)
+	IndicesPutSettings(body io.Reader, o ...func(*esapi.IndicesPutSettingsRequest)) (*esapi.Response, error)
+}
+
+// ElasticsearchClientWrapper wraps the actual Elasticsearch client to implement our interface
+type ElasticsearchClientWrapper struct {
+	client *elasticsearch.Client
+}
+
+// NewElasticsearchClientWrapper creates a new wrapper
+func NewElasticsearchClientWrapper(client *elasticsearch.Client) *ElasticsearchClientWrapper {
+	return &ElasticsearchClientWrapper{client: client}
+}
+
+// Count implements ElasticsearchAPI
+func (w *ElasticsearchClientWrapper) Count(o ...func(*esapi.CountRequest)) (*esapi.Response, error) {
+	return w.client.Count(o...)
+}
+
+// Search implements ElasticsearchAPI
+func (w *ElasticsearchClientWrapper) Search(o ...func(*esapi.SearchRequest)) (*esapi.Response, error) {
+	return w.client.Search(o...)
+}
+
+// Scroll implements ElasticsearchAPI
+func (w *ElasticsearchClientWrapper) Scroll(o ...func(*esapi.ScrollRequest)) (*esapi.Response, error) {
+	return w.client.Scroll(o...)
+}
+
+// Index implements ElasticsearchAPI
+func (w *ElasticsearchClientWrapper) Index(index string, body io.Reader, o ...func(*esapi.IndexRequest)) (*esapi.Response, error) {
+	return w.client.Index(index, body, o...)
+}
+
+// IndicesGetMapping implements ElasticsearchAPI
+func (w *ElasticsearchClientWrapper) IndicesGetMapping(o ...func(*esapi.IndicesGetMappingRequest)) (*esapi.Response, error) {
+	return w.client.Indices.GetMapping(o...)
+}
+
+// IndicesPutMapping implements ElasticsearchAPI
+func (w *ElasticsearchClientWrapper) IndicesPutMapping(indices []string, body io.Reader, o ...func(*esapi.IndicesPutMappingRequest)) (*esapi.Response, error) {
+	return w.client.Indices.PutMapping(indices, body, o...)
+}
+
+// IndicesGetSettings implements ElasticsearchAPI
+func (w *ElasticsearchClientWrapper) IndicesGetSettings(o ...func(*esapi.IndicesGetSettingsRequest)) (*esapi.Response, error) {
+	return w.client.Indices.GetSettings(o...)
+}
+
+// IndicesPutSettings implements ElasticsearchAPI
+func (w *ElasticsearchClientWrapper) IndicesPutSettings(body io.Reader, o ...func(*esapi.IndicesPutSettingsRequest)) (*esapi.Response, error) {
+	return w.client.Indices.PutSettings(body, o...)
+}
 
 // Config holds the configuration for transfer operations
 type Config struct {
@@ -30,7 +92,7 @@ type Config struct {
 
 // Client wraps Elasticsearch client with additional functionality
 type Client struct {
-	*elasticsearch.Client
+	API ElasticsearchAPI
 	URL string
 }
 
@@ -91,7 +153,8 @@ func createClient(url, username, password string) (*Client, error) {
 		return nil, err
 	}
 
-	return &Client{Client: client, URL: url}, nil
+	wrapper := NewElasticsearchClientWrapper(client)
+	return &Client{API: wrapper, URL: url}, nil
 }
 
 // transferData transfers documents between clusters
@@ -351,10 +414,11 @@ func isFile(path string) bool {
 }
 
 func getDocumentCount(client *Client, index string) (int, error) {
-	// Use Elasticsearch client for count
-	res, err := client.Count(
-		client.Count.WithIndex(index),
-		client.Count.WithContext(context.Background()),
+	// Use Elasticsearch API interface for count
+	res, err := client.API.Count(
+		func(r *esapi.CountRequest) {
+			r.Index = []string{index}
+		},
 	)
 	if err != nil {
 		return 0, err
@@ -379,12 +443,13 @@ func getDocumentCount(client *Client, index string) (int, error) {
 }
 
 func startScroll(client *Client, index string, size int) (string, []Document, error) {
-	// Use Elasticsearch client for scroll search
-	res, err := client.Search(
-		client.Search.WithIndex(index),
-		client.Search.WithScroll(time.Minute*5),
-		client.Search.WithSize(size),
-		client.Search.WithContext(context.Background()),
+	// Use Elasticsearch API interface for scroll search
+	res, err := client.API.Search(
+		func(r *esapi.SearchRequest) {
+			r.Index = []string{index}
+			r.Scroll = time.Minute * 5
+			r.Size = &size
+		},
 	)
 	if err != nil {
 		return "", nil, err
@@ -399,11 +464,12 @@ func startScroll(client *Client, index string, size int) (string, []Document, er
 }
 
 func continueScroll(client *Client, scrollID string) (string, []Document, error) {
-	// Use Elasticsearch client for scroll continuation
-	res, err := client.Scroll(
-		client.Scroll.WithScrollID(scrollID),
-		client.Scroll.WithScroll(time.Minute*5),
-		client.Scroll.WithContext(context.Background()),
+	// Use Elasticsearch API interface for scroll continuation
+	res, err := client.API.Scroll(
+		func(r *esapi.ScrollRequest) {
+			r.ScrollID = scrollID
+			r.Scroll = time.Minute * 5
+		},
 	)
 	if err != nil {
 		return "", nil, err
@@ -480,13 +546,14 @@ func indexDocument(client *Client, index string, doc Document) error {
 		return err
 	}
 
-	// Use Elasticsearch Go client for indexing
-	res, err := client.Index(
+	// Use Elasticsearch API interface for indexing
+	res, err := client.API.Index(
 		index,
 		strings.NewReader(string(data)),
-		client.Index.WithDocumentID(doc.ID),
-		client.Index.WithContext(context.Background()),
-		client.Index.WithRefresh("false"),
+		func(r *esapi.IndexRequest) {
+			r.DocumentID = doc.ID
+			r.Refresh = "false"
+		},
 	)
 	if err != nil {
 		return err
@@ -502,9 +569,10 @@ func indexDocument(client *Client, index string, doc Document) error {
 }
 
 func getMapping(client *Client, index string) (map[string]interface{}, error) {
-	res, err := client.Indices.GetMapping(
-		client.Indices.GetMapping.WithIndex(index),
-		client.Indices.GetMapping.WithContext(context.Background()),
+	res, err := client.API.IndicesGetMapping(
+		func(r *esapi.IndicesGetMappingRequest) {
+			r.Index = []string{index}
+		},
 	)
 	if err != nil {
 		return nil, err
@@ -536,10 +604,9 @@ func putMapping(client *Client, index string, mapping map[string]interface{}) er
 		return err
 	}
 
-	res, err := client.Indices.PutMapping(
+	res, err := client.API.IndicesPutMapping(
 		[]string{index},
 		strings.NewReader(string(data)),
-		client.Indices.PutMapping.WithContext(context.Background()),
 	)
 	if err != nil {
 		return err
@@ -554,9 +621,10 @@ func putMapping(client *Client, index string, mapping map[string]interface{}) er
 }
 
 func getSettings(client *Client, index string) (map[string]interface{}, error) {
-	res, err := client.Indices.GetSettings(
-		client.Indices.GetSettings.WithIndex(index),
-		client.Indices.GetSettings.WithContext(context.Background()),
+	res, err := client.API.IndicesGetSettings(
+		func(r *esapi.IndicesGetSettingsRequest) {
+			r.Index = []string{index}
+		},
 	)
 	if err != nil {
 		return nil, err
@@ -588,10 +656,11 @@ func putSettings(client *Client, index string, settings map[string]interface{}) 
 		return err
 	}
 
-	res, err := client.Indices.PutSettings(
+	res, err := client.API.IndicesPutSettings(
 		strings.NewReader(string(data)),
-		client.Indices.PutSettings.WithIndex(index),
-		client.Indices.PutSettings.WithContext(context.Background()),
+		func(r *esapi.IndicesPutSettingsRequest) {
+			r.Index = []string{index}
+		},
 	)
 	if err != nil {
 		return err

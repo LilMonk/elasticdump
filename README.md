@@ -92,6 +92,8 @@ elasticdump transfer [flags]
 - `--concurrency, -c`: Number of concurrent operations (default: 4)
 - `--format, -f`: Output format (`json`, `ndjson`) (default: "json")
 - `--scrollSize, -s`: Size of the scroll for large datasets (default: 1000)
+- `--username, -u`: Username for Elasticsearch authentication
+- `--password, -p`: Password for Elasticsearch authentication
 
 ### `backup`
 
@@ -109,6 +111,8 @@ elasticdump backup [flags]
 - `--concurrency, -c`: Number of concurrent operations (default: 4)
 - `--format, -f`: Output format (`json`, `ndjson`) (default: "ndjson")
 - `--scrollSize, -s`: Size of the scroll for large datasets (default: 1000)
+- `--username, -u`: Username for Elasticsearch authentication
+- `--password, -p`: Password for Elasticsearch authentication
 
 ### `restore`
 
@@ -123,6 +127,8 @@ elasticdump restore [flags]
 - `--output, -o`: Destination Elasticsearch cluster or index (required)
 - `--type, -t`: Type of data to restore (`data`, `mapping`, `settings`) (default: "data")
 - `--concurrency, -c`: Number of concurrent operations (default: 4)
+- `--username, -u`: Username for Elasticsearch authentication
+- `--password, -p`: Password for Elasticsearch authentication
 
 ## Global Flags
 
@@ -172,12 +178,16 @@ elasticdump backup \
 
 ### Authentication
 
-For clusters requiring authentication, include credentials in the URL:
+Elasticdump supports basic authentication methods for clusters requiring authentication:
+
+#### Using Username and Password Flags
 
 ```bash
 elasticdump transfer \
-  --input=https://user:pass@source.elasticsearch.com:9200/index \
-  --output=https://user:pass@dest.elasticsearch.com:9200/index
+  --input=http://source.elasticsearch.com:9200/index \
+  --output=http://dest.elasticsearch.com:9200/index \
+  --username=elastic \
+  --password=your_password
 ```
 
 ## Performance Tips
@@ -194,7 +204,6 @@ Elasticdump includes robust error handling:
 - Automatic retries for transient network errors
 - Detailed error messages for debugging
 - Graceful handling of malformed documents
-- Progress preservation for interrupted operations
 
 ## Contributing
 

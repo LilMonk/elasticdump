@@ -19,22 +19,22 @@ Thank you for your interest in contributing to Elasticdump! We welcome contribut
 1. Ensure you have Go 1.21+ installed
 2. Install dependencies:
    ```bash
-   go mod download
+   make install dev-deps
    ```
-3. Run tests:
+3. Build the project:
    ```bash
-   go test ./...
+   make build
    ```
-4. Build the project:
+4. Run tests:
    ```bash
-   go build -o elasticdump
+   make test
    ```
 
 ## Code Style
 
 - Follow standard Go conventions
-- Use `gofmt` to format your code
-- Run `go vet` to check for common mistakes
+- Use `make format` to format your code
+- Run `make lint` to check for common mistakes
 - Add tests for new functionality
 
 ## Submitting Changes
