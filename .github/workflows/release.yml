@@ -13,7 +13,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - name: Set up Go
       uses: actions/setup-go@v6
@@ -46,7 +46,7 @@ jobs:
             suffix: windows-amd64.exe
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - name: Set up Go
       uses: actions/setup-go@v6
@@ -85,7 +85,7 @@ jobs:
     needs: build-and-release
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
@@ -152,7 +152,7 @@ jobs:
   #   needs: test
   #   runs-on: ubuntu-latest
   #   steps:
-  #   - uses: actions/checkout@v5
+  #   - uses: actions/checkout@v6
 
   #   - name: Set up Docker Buildx
   #     uses: docker/setup-buildx-action@v3
