@@ -7,7 +7,7 @@ toolchain go1.23.4
 require (
 	github.com/elastic/go-elasticsearch/v8 v8.19.0
 	github.com/schollz/progressbar/v3 v3.18.0
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 )
 
 require (
